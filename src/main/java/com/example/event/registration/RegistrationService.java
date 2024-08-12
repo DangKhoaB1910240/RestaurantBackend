@@ -215,10 +215,24 @@ public class RegistrationService {
     }
     public void updateById(Integer id,Integer userId,Registration registration) {
         Registration r = registrationRepository.findById(id).orElseThrow(() -> new NotFoundException("Không tồn tại bản đăng ký này"));
+        Boolean isCheck = false;
+        if(r.getStatus() == 2) {
+            isCheck = true;
+        }
         User user = userRepository.findById(r.getUsers().getId()).orElseThrow(() -> new NotFoundException("Không tồn tại người dùng đăng ký bản này"));
         Event e = eventRepository.findById(r.getEvent().getId()).orElseThrow(() -> new NotFoundException("Không tồn tại sự kiện này"));
         r.setStatus(registration.getStatus());
         String message = r.getStatus() != 0 ? (r.getStatus() == 1 ? "Đã xác nhận tham gia" : "Không tham gia đúng hạn") : "Chưa xử lý"; 
+        if(r.getStatus() == 1) {
+            e.setTotalAttended(e.getTotalAttended()+1);
+        }
+        if(r.getStatus() == 0) {
+            if(!isCheck) {
+                e.setTotalAttended(e.getTotalAttended()-1);
+            }
+            
+        }
+        eventRepository.save(e);
         addLogger(userId, "- Cập nhật trạng thái đăng ký sự kiện \""+e.getEventName()+"\" của tài khoản \""+user.getUsername()+"\" thành \""+message+"\"");
     }
     private void addLogger(Integer userId,String content) {

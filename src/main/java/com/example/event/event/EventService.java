@@ -166,6 +166,10 @@ public class EventService {
         event.setMaxQuantity(eventRequestDTO.getMaxQuantity());
         event.setImg(eventRequestDTO.getImg());
         event.setOrganizer(o);
+        event.setTinhThanhId(eventRequestDTO.getTinhThanhId());
+        event.setQuanHuyenId(eventRequestDTO.getQuanHuyenId());
+        event.setPhuongXaId(eventRequestDTO.getPhuongXaId());
+        event.setAddress(eventRequestDTO.getAddress());
         if(event.getStartDateTime().isAfter(event.getEndDateTime())) {
             throw new InvalidValueException("Ngày bắt đầu phải bé hơn ngày kết thúc");
         }
@@ -173,6 +177,11 @@ public class EventService {
         if(event.getMaxQuantity()<=0) {
             throw new InvalidValueException("Số lượng tối đa phải >=0");
         }
+        
+        if(eventRequestDTO.getCost() <10000 || eventRequestDTO.getCost()%1000!=0) {
+            throw new InvalidValueException("Giá vé phải lớn hơn hoặc bằng 10.000đ và chia hết cho 1000");
+        }
+        event.setCost(eventRequestDTO.getCost());
         String content = "- Thêm sự kiện "+event.getEventName()+" thuộc nhà tổ chức "+o.getOrganizerName();
         eventRepository.save(event);
         addLogger(userId,content);
@@ -210,6 +219,10 @@ public class EventService {
         event.setImg(eventRequestDTO.getImg());
         event.setOrganizer(o);
         event.setStatus(eventRequestDTO.getStatus());
+        event.setTinhThanhId(eventRequestDTO.getTinhThanhId());
+        event.setQuanHuyenId(eventRequestDTO.getQuanHuyenId());
+        event.setPhuongXaId(eventRequestDTO.getPhuongXaId());
+        event.setAddress(eventRequestDTO.getAddress());
         if(event.getStartDateTime().isAfter(event.getEndDateTime())) {
             throw new InvalidValueException("Ngày bắt đầu phải bé hơn ngày kết thúc");
         }
@@ -217,6 +230,10 @@ public class EventService {
         if(event.getMaxQuantity()<=0) {
             throw new InvalidValueException("Số lượng tối đa phải >=0");
         }
+        if(eventRequestDTO.getCost() <10000 || eventRequestDTO.getCost()%1000!=0) {
+            throw new InvalidValueException("Giá vé phải lớn hơn hoặc bằng 10.000đ và chia hết cho 1000");
+        }
+        event.setCost(eventRequestDTO.getCost());
         //Kiểm tra id có tồn tại không
         Event event2 = eventRepository.findById(id).orElseThrow(() -> new NotFoundException("Không tồn tại sự kiện với id: "+id));
         //Viết logger
@@ -232,6 +249,11 @@ public class EventService {
         event2.setMaxQuantity(event.getMaxQuantity());
         event2.setStatus(event.getStatus());
         event2.setOrganizer(o);
+        event2.setTinhThanhId(event.getTinhThanhId());
+        event2.setQuanHuyenId(event.getQuanHuyenId());
+        event2.setPhuongXaId(event.getPhuongXaId());
+        event2.setAddress(event.getAddress());
+        event2.setCost(event.getCost());
         eventRepository.save(event2);
         
     }

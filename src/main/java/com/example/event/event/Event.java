@@ -41,4 +41,9 @@ public class Event {
     @ManyToOne
     @JoinColumn(name = "organizer_id", nullable = false)
     private Organizer organizer;
+    private Integer tinhThanhId;
+    private Integer quanHuyenId;
+    private Integer phuongXaId;
+    private String address;
+    private Long cost;
 }

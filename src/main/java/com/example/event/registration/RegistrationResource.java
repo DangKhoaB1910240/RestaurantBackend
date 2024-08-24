@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+import java.io.UnsupportedEncodingException;
 import com.example.event.event.Event;
 import com.example.event.event.EventStatus;
 
@@ -27,9 +27,8 @@ public class RegistrationResource {
     private RegistrationService registrationService;   
 
     @PostMapping
-    public ResponseEntity<Void> registerEvent(@RequestBody Registration registration) {
-        registrationService.registerUserForEvent(registration);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<String> registerEvent(@RequestBody Registration registration) throws UnsupportedEncodingException {
+        return ResponseEntity.status(HttpStatus.CREATED).body(registrationService.registerUserForEvent(registration));
     }
     @GetMapping("/check-exist")
     public ResponseEntity<Boolean> isCheckEventIdAndUserId(@RequestParam(required = true) Integer userId,@RequestParam(required = true) Integer eventId) {
@@ -51,9 +50,12 @@ public class RegistrationResource {
     @GetMapping("order-by-registration-date/filter")
     public ResponseEntity<List<Registration>> getAllRegistrationByFilter(
         @RequestParam(required = false) Integer eventId,
-        @RequestParam(required = false) String userFullname
+        @RequestParam(required = false) String userFullname,
+        @RequestParam(required = false) Integer status,
+        @RequestParam(required = false) String monthYear,
+        @RequestParam(required = false) String dayMonthYear
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(registrationService.getAllRegistrationByFilter(eventId,userFullname));
+        return ResponseEntity.status(HttpStatus.OK).body(registrationService.getAllRegistrationByFilter(eventId,userFullname, status, monthYear, dayMonthYear));
     }
     @PatchMapping("/{id}/user/{userId}")
     public ResponseEntity<Void> updateById(@PathVariable Integer id,@PathVariable Integer userId,@RequestBody Registration registration) {

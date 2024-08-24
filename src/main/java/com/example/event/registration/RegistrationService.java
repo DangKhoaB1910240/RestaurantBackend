@@ -2,10 +2,12 @@ package com.example.event.registration;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
+import java.io.UnsupportedEncodingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,7 @@ import com.example.event.organizer.OrganizerRepository;
 import com.example.event.role.Role;
 import com.example.event.user.User;
 import com.example.event.user.UserRepository;
+import com.example.event.vnpay.VNPayResource;
 
 import jakarta.transaction.Transactional;
 
@@ -38,15 +41,17 @@ public class RegistrationService {
     private LoggerService loggerService;
     private EmailService emailService;
     private OrganizerRepository organizerRepository;
+    private VNPayResource vnPayResource;
     @Autowired
     public RegistrationService(RegistrationRepository registrationRepository, EventRepository eventRepository,
-            UserRepository userRepository, LoggerService loggerService, EmailService emailService,OrganizerRepository organizerRepository) {
+            UserRepository userRepository, LoggerService loggerService, EmailService emailService,OrganizerRepository organizerRepository, VNPayResource vnPayResource) {
         this.registrationRepository = registrationRepository;
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
         this.loggerService = loggerService;
         this.emailService = emailService;
         this.organizerRepository = organizerRepository;
+        this.vnPayResource = vnPayResource;
     }
 
     // Phương thức kiểm tra event có hợp lệ không
@@ -95,7 +100,7 @@ public class RegistrationService {
 
     // Phương thức thực hiện đăng ký người dùng cho sự kiện
     @Transactional
-    public void registerUserForEvent(Registration registration) {
+    public String registerUserForEvent(Registration registration) throws UnsupportedEncodingException  {
         //Lấy giá trị userId và eventId
         Integer userId = registration.getUsers().getId();
         Integer eventId = registration.getEvent().getId();
@@ -129,12 +134,15 @@ public class RegistrationService {
             throw new AlreadyExistsException("Sự kiện này đã đủ số lượng rồi");
         }
         event.setTotalRegistered(event.getTotalRegistered()+1);
-        eventRepository.save(event);
-        registrationRepository.save(registration);
+        Registration registration2 = registrationRepository.save(registration);
         Email email = new Email();
         email.setSubject("THÔNG BÁO ĐĂNG KÝ SỰ KIỆN THÀNH CÔNG");
         email.setToEmail(user.getEmail());
         emailService.sendEmail(email, user, event, organizer);
+        if(registration.getPaymentMethod() == 1) {
+            return vnPayResource.getPay(event.getCost(), registration2.getId());
+        }
+        return "";
         
     }
     public List<Event> getEventByUserId( Integer userId,
@@ -178,7 +186,10 @@ public class RegistrationService {
     }
     public List<Registration> getAllRegistrationByFilter(
         Integer eventId,
-       String userFullname
+       String userFullname,
+       Integer status,
+       String monthYear,
+       String dayMonthYear
     ) {
         //Lấy danh sách tổng ra
        List<Registration> registrations = registrationRepository.findAll();
@@ -190,6 +201,34 @@ public class RegistrationService {
        if(eventId!=null) {
             registrations.removeIf(r -> r.getEvent().getId()!=eventId);
        }
+       // Filter by status
+       if (status != null  ) {
+            registrations.removeIf(r -> r.getStatus() != status);
+        }
+        // Filter by month and year
+        if (monthYear != null && !monthYear.trim().isEmpty() && monthYear !="null") {
+            try {
+                DateTimeFormatter monthYearFormatter = DateTimeFormatter.ofPattern("MM/yyyy");
+                LocalDate startDate = LocalDate.parse("01/" + monthYear, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+                registrations.removeIf(r -> r.getRegistrationDate().isBefore(startDate) || r.getRegistrationDate().isAfter(endDate));
+            } catch (DateTimeParseException e) {
+                // Handle the exception or log it
+                e.printStackTrace();
+            }
+        }
+
+        // Filter by day, month, and year
+        if (dayMonthYear != null && !dayMonthYear.trim().isEmpty() && dayMonthYear !="null") {
+            try {
+                DateTimeFormatter dayMonthYearFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                LocalDate specificDate = LocalDate.parse(dayMonthYear, dayMonthYearFormatter);
+                registrations.removeIf(r -> !r.getRegistrationDate().equals(specificDate));
+            } catch (DateTimeParseException e) {
+                // Handle the exception or log it
+                e.printStackTrace();
+            }
+        }
        return registrations;
        
     }
@@ -231,6 +270,11 @@ public class RegistrationService {
                 e.setTotalAttended(e.getTotalAttended()-1);
             }
             
+        }
+        if(registration.getRefuseMessage() != null) {
+            r.setRefuseMessage(registration.getRefuseMessage());
+            r.setStatus(2);
+            registrationRepository.save(r);
         }
         eventRepository.save(e);
         addLogger(userId, "- Cập nhật trạng thái đăng ký sự kiện \""+e.getEventName()+"\" của tài khoản \""+user.getUsername()+"\" thành \""+message+"\"");

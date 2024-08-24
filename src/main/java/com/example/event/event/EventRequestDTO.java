@@ -20,5 +20,10 @@ public class EventRequestDTO {
     private Integer maxQuantity;
     private String img;
     private Integer organizerId;
+    private Integer tinhThanhId;
+    private Integer quanHuyenId;
+    private Integer phuongXaId;
+    private String address;
+    private Long cost;
     private Boolean status;
 }

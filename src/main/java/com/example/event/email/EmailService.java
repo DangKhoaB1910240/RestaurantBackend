@@ -9,7 +9,11 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import com.example.event.event.Event;
+import com.example.event.external.ExternalAPIService;
+import com.example.event.external.LocationData;
 import com.example.event.organizer.Organizer;
+import com.example.event.registration.Registration;
+import com.example.event.registration.RegistrationRepository;
 import com.example.event.user.User;
 
 import jakarta.mail.MessagingException;
@@ -19,6 +23,10 @@ import jakarta.mail.internet.MimeMessage;
 public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
+    @Autowired
+    private ExternalAPIService externalAPIService;
+    @Autowired
+    private RegistrationRepository registrationRepository;
     public void sendEmail(Email email, User user,Event event, Organizer organizer) {
         //Basic thôi
         // SimpleMailMessage message = new SimpleMailMessage();
@@ -29,6 +37,8 @@ public class EmailService {
         // mailSender.send(message);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"); 
         MimeMessage message = mailSender.createMimeMessage();
+        Registration registration = registrationRepository.findByUsersIdAndEventId(user.getId(), event.getId());
+        LocationData locationData = externalAPIService.getLocationDataById(event.getPhuongXaId());
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setFrom("Dormitory@gmail.com");
@@ -123,7 +133,18 @@ public class EmailService {
                     "          <td class=\"title\">Sự kiện:</td>\r\n" + //
                     "          <td>"+event.getEventName()+"</td>\r\n" + //
                     "        </tr>\r\n" + //
-                   
+                    "        <tr>\r\n" + //
+                    "          <td class=\"title\">Địa chỉ:</td>\r\n" + //
+                    "          <td>"+event.getAddress()+", "+locationData.getFull_name()+"</td>\r\n" + //
+                    "        </tr>\r\n" + //
+                    "        <tr>\r\n" + //
+                    "          <td class=\"title\">Giá vé:</td>\r\n" + //
+                    "          <td>"+event.getCost()+"đ</td>\r\n" + //
+                    "        </tr>\r\n" + //
+                   "        <tr>\r\n" + //
+                    "          <td class=\"title\">Phương thức thanh toán:</td>\r\n" + //
+                    "          <td>"+(registration.getPaymentMethod() == 1 ? "Thanh toán VNPay": "Thanh toán trực tiếp")+"</td>\r\n" + //
+                    "        </tr>\r\n" + //
                    
                     "        <tr>\r\n" + //
                     "          <td class=\"title\">Ngày bắt đầu :</td>\r\n" + //

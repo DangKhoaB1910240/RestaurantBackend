@@ -30,9 +30,11 @@ public class Registration {
     @JoinColumn(name = "event_id", nullable = false)
     private Event event;
     private LocalDate registrationDate = LocalDate.now();
-    private Integer status = 0;
+    private Integer status = 0; // nếu là -1 đã thanh toán rồi 
+    private Integer paymentMethod;
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User users;
+    private String refuseMessage;
     // Getters and setters
 }

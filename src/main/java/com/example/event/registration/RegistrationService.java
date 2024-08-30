@@ -279,6 +279,14 @@ public class RegistrationService {
         eventRepository.save(e);
         addLogger(userId, "- Cập nhật trạng thái đăng ký sự kiện \""+e.getEventName()+"\" của tài khoản \""+user.getUsername()+"\" thành \""+message+"\"");
     }
+    public void updateById2(Integer id,Integer userId,Registration registration) {
+        Registration r = registrationRepository.findById(id).orElseThrow(() -> new NotFoundException("Không tồn tại bản đăng ký này"));
+        if(registration.getRefuseMessage() != null) {
+            r.setRefuseMessage(registration.getRefuseMessage());
+            r.setStatus(2);
+            registrationRepository.save(r);
+        }
+    }
     private void addLogger(Integer userId,String content) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Không tồn tại user "));
         String roleName = new String();

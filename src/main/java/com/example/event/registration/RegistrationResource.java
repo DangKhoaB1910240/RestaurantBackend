@@ -62,4 +62,9 @@ public class RegistrationResource {
         registrationService.updateById(id,userId,registration);
         return ResponseEntity.noContent().build();
     }
+    @PatchMapping("/{id}/user2/{userId}")
+    public ResponseEntity<Void> updateById2(@PathVariable Integer id,@PathVariable Integer userId,@RequestBody Registration registration) {
+        registrationService.updateById2(id,userId,registration);
+        return ResponseEntity.noContent().build();
+    }
 }

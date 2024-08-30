@@ -261,8 +261,8 @@ public class RegistrationService {
         User user = userRepository.findById(r.getUsers().getId()).orElseThrow(() -> new NotFoundException("Không tồn tại người dùng đăng ký bản này"));
         Event e = eventRepository.findById(r.getEvent().getId()).orElseThrow(() -> new NotFoundException("Không tồn tại sự kiện này"));
         r.setStatus(registration.getStatus());
-        String message = r.getStatus() != 0 ? (r.getStatus() == 1 ? "Đã xác nhận tham gia" : "Không tham gia đúng hạn") : "Chưa xử lý"; 
-        if(r.getStatus() == 1) {
+        String message = r.getStatus() != 0 ? (r.getStatus() == -1 ? "Đã thanh toán" : "Không tham gia đúng hạn") : "Chưa xử lý"; 
+        if(r.getStatus() == -1) {
             e.setTotalAttended(e.getTotalAttended()+1);
         }
         if(r.getStatus() == 0) {

@@ -23,6 +23,8 @@ import com.example.event.event.EventStatus;
 import com.example.event.exception.AlreadyExistsException;
 import com.example.event.exception.InvalidValueException;
 import com.example.event.exception.NotFoundException;
+import com.example.event.ghe.Ghe;
+import com.example.event.ghe.GheRepository;
 import com.example.event.logger.LoggerService;
 import com.example.event.organizer.Organizer;
 import com.example.event.organizer.OrganizerRepository;
@@ -42,9 +44,10 @@ public class RegistrationService {
     private EmailService emailService;
     private OrganizerRepository organizerRepository;
     private VNPayResource vnPayResource;
+    private GheRepository gheRepository;
     @Autowired
     public RegistrationService(RegistrationRepository registrationRepository, EventRepository eventRepository,
-            UserRepository userRepository, LoggerService loggerService, EmailService emailService,OrganizerRepository organizerRepository, VNPayResource vnPayResource) {
+            UserRepository userRepository, LoggerService loggerService, EmailService emailService,OrganizerRepository organizerRepository, VNPayResource vnPayResource, GheRepository gheRepository) {
         this.registrationRepository = registrationRepository;
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
@@ -52,6 +55,7 @@ public class RegistrationService {
         this.emailService = emailService;
         this.organizerRepository = organizerRepository;
         this.vnPayResource = vnPayResource;
+        this.gheRepository = gheRepository;
     }
 
     // Phương thức kiểm tra event có hợp lệ không
@@ -139,8 +143,9 @@ public class RegistrationService {
         email.setSubject("THÔNG BÁO ĐĂNG KÝ SỰ KIỆN THÀNH CÔNG");
         email.setToEmail(user.getEmail());
         emailService.sendEmail(email, user, event, organizer);
+        Ghe ghe = this.gheRepository.findById(1).orElseThrow(() ->  new NotFoundException("Không tồn tại ghế"));
         if(registration.getPaymentMethod() == 1) {
-            return vnPayResource.getPay(event.getCost(), registration2.getId());
+            return registration.getLoaiGhe() == 0 ? vnPayResource.getPay(event.getCost(), registration2.getId()) : vnPayResource.getPay(event.getCost()+ghe.getGiaGhe(), registration2.getId());
         }
         return "";
         

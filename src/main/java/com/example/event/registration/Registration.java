@@ -36,5 +36,6 @@ public class Registration {
     @JoinColumn(name = "user_id", nullable = false)
     private User users;
     private String refuseMessage;
+    private Integer loaiGhe;
     // Getters and setters
 }

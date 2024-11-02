@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.event.event.Event;
+import com.example.event.event.EventRepository;
 import com.example.event.exception.NotFoundException;
 import com.example.event.registration.Registration;
 import com.example.event.registration.RegistrationRepository;
@@ -37,11 +39,13 @@ import jakarta.websocket.server.PathParam;
 public class VNPayResource {
     @Autowired
     private RegistrationRepository registrationRepository;
-
+    @Autowired
+    private EventRepository eventRepository;
     @GetMapping("payment-callback")
     public void paymentCallback(@RequestParam Map<String, String> queryParams,HttpServletResponse response) throws IOException {
         String vnp_ResponseCode = queryParams.get("vnp_ResponseCode");
         String registrationId = queryParams.get("registrationId");
+        String eventId = queryParams.get("eventId");
         if(registrationId!= null && !registrationId.equals("")) {
             if ("00".equals(vnp_ResponseCode)) {
                 // Giao dịch thành công
@@ -49,6 +53,9 @@ public class VNPayResource {
                 System.out.println(queryParams.get("registrationId"));
                 Registration registration = registrationRepository.findById(Integer.parseInt(queryParams.get("registrationId")))
                 .orElseThrow(() -> new NotFoundException("Không tồn tại hồ sơ đăng ký cuả khách hàng này"));
+                Event event = this.eventRepository.findById(Integer.parseInt(eventId)).orElseThrow( () -> new NotFoundException("Không tồn tại sự kiên"));
+                event.setTotalAttended(event.getTotalAttended()+1);
+                this.eventRepository.save(event);
             registration.setStatus(-1);
             registrationRepository.save(registration);
             response.sendRedirect("http://localhost:4200/chitietsukien/"+registration.getEvent().getId());
@@ -67,7 +74,7 @@ public class VNPayResource {
 
     }
     @GetMapping("pay")
-	public String getPay(@RequestParam("price") Long price,@RequestParam("registrationId") Integer registrationId) throws UnsupportedEncodingException{
+	public String getPay(@RequestParam("price") Long price,@RequestParam("registrationId") Integer registrationId, @RequestParam("eventId") Integer eventId) throws UnsupportedEncodingException{
 		
 		String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
@@ -93,7 +100,7 @@ public class VNPayResource {
         vnp_Params.put("vnp_OrderType", orderType);
 
         vnp_Params.put("vnp_Locale", "vn");
-        vnp_Params.put("vnp_ReturnUrl", Config.vnp_ReturnUrl+"?registrationId="+registrationId);
+        vnp_Params.put("vnp_ReturnUrl", Config.vnp_ReturnUrl+"?registrationId="+registrationId+"&eventId="+eventId);
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));

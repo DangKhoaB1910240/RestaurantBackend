@@ -145,7 +145,7 @@ public class RegistrationService {
         emailService.sendEmail(email, user, event, organizer);
         Ghe ghe = this.gheRepository.findById(1).orElseThrow(() ->  new NotFoundException("Không tồn tại ghế"));
         if(registration.getPaymentMethod() == 1) {
-            return registration.getLoaiGhe() == 0 ? vnPayResource.getPay(event.getCost(), registration2.getId()) : vnPayResource.getPay(event.getCost()+ghe.getGiaGhe(), registration2.getId());
+            return registration.getLoaiGhe() == 0 ? vnPayResource.getPay(event.getCost(), registration2.getId(), event.getId()) : vnPayResource.getPay(event.getCost()+ghe.getGiaGhe(), registration2.getId(), event.getId());
         }
         return "";
         

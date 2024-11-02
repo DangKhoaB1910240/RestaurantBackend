@@ -244,8 +244,6 @@ public class EventService {
         event2.setStartDateTime(event.getStartDateTime());
         event2.setEventName(event.getEventName());
         event2.setImg(event.getImg());
-        event2.setTotalAttended(event.getTotalAttended());
-        event2.setTotalRegistered(event.getTotalRegistered());
         event2.setMaxQuantity(event.getMaxQuantity());
         event2.setStatus(event.getStatus());
         event2.setOrganizer(o);

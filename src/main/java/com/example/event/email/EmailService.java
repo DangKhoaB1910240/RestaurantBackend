@@ -9,8 +9,11 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import com.example.event.event.Event;
+import com.example.event.exception.NotFoundException;
 import com.example.event.external.ExternalAPIService;
 import com.example.event.external.LocationData;
+import com.example.event.ghe.Ghe;
+import com.example.event.ghe.GheRepository;
 import com.example.event.organizer.Organizer;
 import com.example.event.registration.Registration;
 import com.example.event.registration.RegistrationRepository;
@@ -27,6 +30,8 @@ public class EmailService {
     private ExternalAPIService externalAPIService;
     @Autowired
     private RegistrationRepository registrationRepository;
+    @Autowired
+    private GheRepository gheRepository;
     public void sendEmail(Email email, User user,Event event, Organizer organizer) {
         //Basic thôi
         // SimpleMailMessage message = new SimpleMailMessage();
@@ -39,6 +44,11 @@ public class EmailService {
         MimeMessage message = mailSender.createMimeMessage();
         Registration registration = registrationRepository.findByUsersIdAndEventId(user.getId(), event.getId());
         LocationData locationData = externalAPIService.getLocationDataById(event.getPhuongXaId());
+        String loaiGhe = registration.getLoaiGhe() == 1 ? "Ghế vip" : "Ghế thường";
+        if(registration.getLoaiGhe() == 1) {
+            Ghe ghe = this.gheRepository.findById(1).orElseThrow(() -> new NotFoundException("Không tồn tại lại ghế"));
+            event.setCost(event.getCost()+ghe.getGiaGhe());
+        }
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setFrom("Dormitory@gmail.com");
@@ -136,6 +146,10 @@ public class EmailService {
                     "        <tr>\r\n" + //
                     "          <td class=\"title\">Địa chỉ:</td>\r\n" + //
                     "          <td>"+event.getAddress()+", "+locationData.getFull_name()+"</td>\r\n" + //
+                    "        </tr>\r\n" + //
+                    "        <tr>\r\n" + //
+                    "          <td class=\"title\">Loại ghế:</td>\r\n" + //
+                    "          <td>"+loaiGhe+"đ</td>\r\n" + //
                     "        </tr>\r\n" + //
                     "        <tr>\r\n" + //
                     "          <td class=\"title\">Giá vé:</td>\r\n" + //

@@ -1,4 +1,5 @@
 package com.example.event.email;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -47,8 +48,9 @@ public class EmailService {
         String loaiGhe = registration.getLoaiGhe() == 1 ? "Ghế vip" : "Ghế thường";
         if(registration.getLoaiGhe() == 1) {
             Ghe ghe = this.gheRepository.findById(1).orElseThrow(() -> new NotFoundException("Không tồn tại lại ghế"));
-            event.setCost(event.getCost()+ghe.getGiaGhe());
+            event.setCost(event.getCost() + (long) ghe.getGiaGhe());
         }
+        DecimalFormat formatter2 = new DecimalFormat("#,###.###");
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setFrom("Dormitory@gmail.com");
@@ -149,11 +151,11 @@ public class EmailService {
                     "        </tr>\r\n" + //
                     "        <tr>\r\n" + //
                     "          <td class=\"title\">Loại ghế:</td>\r\n" + //
-                    "          <td>"+loaiGhe+"đ</td>\r\n" + //
+                    "          <td>"+loaiGhe+"</td>\r\n" + //
                     "        </tr>\r\n" + //
                     "        <tr>\r\n" + //
                     "          <td class=\"title\">Giá vé:</td>\r\n" + //
-                    "          <td>"+event.getCost()+"đ</td>\r\n" + //
+                    "          <td>"+formatter2.format((event.getCost()))+"đ</td>\r\n" + //
                     "        </tr>\r\n" + //
                    "        <tr>\r\n" + //
                     "          <td class=\"title\">Phương thức thanh toán:</td>\r\n" + //

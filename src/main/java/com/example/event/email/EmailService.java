@@ -46,9 +46,12 @@ public class EmailService {
         Registration registration = registrationRepository.findByUsersIdAndEventId(user.getId(), event.getId());
         LocationData locationData = externalAPIService.getLocationDataById(event.getPhuongXaId());
         String loaiGhe = registration.getLoaiGhe() == 1 ? "Ghế vip" : "Ghế thường";
+        Long gia = 0L;
         if(registration.getLoaiGhe() == 1) {
             Ghe ghe = this.gheRepository.findById(1).orElseThrow(() -> new NotFoundException("Không tồn tại lại ghế"));
-            event.setCost(event.getCost() + (long) ghe.getGiaGhe());
+            gia = event.getCost() + (long) ghe.getGiaGhe();
+        } else {
+            gia = event.getCost() ;
         }
         DecimalFormat formatter2 = new DecimalFormat("#,###.###");
         try {
@@ -155,7 +158,7 @@ public class EmailService {
                     "        </tr>\r\n" + //
                     "        <tr>\r\n" + //
                     "          <td class=\"title\">Giá vé:</td>\r\n" + //
-                    "          <td>"+formatter2.format((event.getCost()))+"đ</td>\r\n" + //
+                    "          <td>"+formatter2.format((gia))+"đ</td>\r\n" + //
                     "        </tr>\r\n" + //
                    "        <tr>\r\n" + //
                     "          <td class=\"title\">Phương thức thanh toán:</td>\r\n" + //

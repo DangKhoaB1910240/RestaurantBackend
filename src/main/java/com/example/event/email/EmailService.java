@@ -9,15 +9,11 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import com.example.event.event.Event;
+import com.example.event.category.Category;
 import com.example.event.exception.NotFoundException;
 import com.example.event.external.ExternalAPIService;
 import com.example.event.external.LocationData;
-import com.example.event.ghe.Ghe;
-import com.example.event.ghe.GheRepository;
-import com.example.event.organizer.Organizer;
-import com.example.event.registration.Registration;
-import com.example.event.registration.RegistrationRepository;
+import com.example.event.item.Item;
 import com.example.event.user.User;
 
 import jakarta.mail.MessagingException;
@@ -29,11 +25,8 @@ public class EmailService {
     private JavaMailSender mailSender;
     @Autowired
     private ExternalAPIService externalAPIService;
-    @Autowired
-    private RegistrationRepository registrationRepository;
-    @Autowired
-    private GheRepository gheRepository;
-    public void sendEmail(Email email, User user,Event event, Organizer organizer) {
+    
+    public void sendEmail(Email email, User user,Item event, Category organizer) {
         //Basic thôi
         // SimpleMailMessage message = new SimpleMailMessage();
         // message.setFrom("khoab1910240@gmail.com");
@@ -43,16 +36,8 @@ public class EmailService {
         // mailSender.send(message);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"); 
         MimeMessage message = mailSender.createMimeMessage();
-        Registration registration = registrationRepository.findByUsersIdAndEventId(user.getId(), event.getId());
-        LocationData locationData = externalAPIService.getLocationDataById(event.getPhuongXaId());
-        String loaiGhe = registration.getLoaiGhe() == 1 ? "Ghế vip" : "Ghế thường";
-        Long gia = 0L;
-        if(registration.getLoaiGhe() == 1) {
-            Ghe ghe = this.gheRepository.findById(1).orElseThrow(() -> new NotFoundException("Không tồn tại lại ghế"));
-            gia = event.getCost() + (long) ghe.getGiaGhe();
-        } else {
-            gia = event.getCost() ;
-        }
+        // String loaiGhe = registration.getLoaiGhe() == 1 ? "Ghế vip" : "Ghế thường";
+        Long gia = event.getCost();
         DecimalFormat formatter2 = new DecimalFormat("#,###.###");
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -138,23 +123,23 @@ public class EmailService {
                     
                     "      </table>\r\n" + //
                     
-                    "      <h4 style=\"text-align: center\">Thông tin sự kiện</h4>\r\n" + //
+                    "      <h4 style=\"text-align: center\">Thông tin món</h4>\r\n" + //
                     "      <table style=\"background-color: white\">\r\n" + //
                     "        <tr>\r\n" + //
-                    "          <td class=\"title\">Nhà tổ chức:</td>\r\n" + //
-                    "          <td>"+organizer.getOrganizerName()+"</td>\r\n" + //
+                    "          <td class=\"title\">danh mục:</td>\r\n" + //
+                    "          <td>"+organizer.getName()+"</td>\r\n" + //
                     "        </tr>\r\n" + //
                     "        <tr>\r\n" + //
                     "          <td class=\"title\">Sự kiện:</td>\r\n" + //
-                    "          <td>"+event.getEventName()+"</td>\r\n" + //
+                    "          <td>"+event.getItemName()+"</td>\r\n" + //
                     "        </tr>\r\n" + //
                     "        <tr>\r\n" + //
                     "          <td class=\"title\">Địa chỉ:</td>\r\n" + //
-                    "          <td>"+event.getAddress()+", "+locationData.getFull_name()+"</td>\r\n" + //
+                    "          <td>Đường Nguyễn Văn A, phường Mỹ Đình 1, quận Nam Từ Liêm, thành phố Hà Nội</td>\r\n" + //
                     "        </tr>\r\n" + //
                     "        <tr>\r\n" + //
                     "          <td class=\"title\">Loại ghế:</td>\r\n" + //
-                    "          <td>"+loaiGhe+"</td>\r\n" + //
+                    "          <td></td>\r\n" + //
                     "        </tr>\r\n" + //
                     "        <tr>\r\n" + //
                     "          <td class=\"title\">Giá vé:</td>\r\n" + //
@@ -162,16 +147,16 @@ public class EmailService {
                     "        </tr>\r\n" + //
                    "        <tr>\r\n" + //
                     "          <td class=\"title\">Phương thức thanh toán:</td>\r\n" + //
-                    "          <td>"+(registration.getPaymentMethod() == 1 ? "Thanh toán VNPay": "Thanh toán trực tiếp")+"</td>\r\n" + //
+                    "          <td></td>\r\n" + //
                     "        </tr>\r\n" + //
                    
                     "        <tr>\r\n" + //
-                    "          <td class=\"title\">Ngày bắt đầu :</td>\r\n" + //
-                    "          <td>"+formatter.format(event.getStartDateTime())+"</td>\r\n" + //
+                    "          <td class=\"title\">Ngày đặt :</td>\r\n" + //
+                    "          <td></td>\r\n" + //
                     "        </tr>\r\n" + //
                     "        <tr>\r\n" + //
-                    "          <td class=\"title\">Ngày kết thúc:</td>\r\n" + //
-                    "          <td>"+formatter.format(event.getEndDateTime())+"</td>\r\n" + //
+                    "          <td class=\"title\">Ngày nhận:</td>\r\n" + //
+                    "          <td></td>\r\n" + //
                     "        </tr>\r\n" + //
                     "      </table>\r\n" + //
                     "      <div>\r\n" + //
@@ -193,7 +178,7 @@ public class EmailService {
                     "                ></strong\r\n" + //
                     "              >&nbsp;Nếu không tham gia đúng thời hạn đăng ký, bạn sẽ bị <em\r\n" + //
                     "                ><b>KHÓA TÀI KHOẢN</b></em\r\n" + //
-                    "              >&nbsp;, và không thể đăng ký ở các sự kiện khác.<strong\r\n" + //
+                    "              >&nbsp;, và không thể đăng ký ở các món khác.<strong\r\n" + //
                     "                >&nbsp;</strong\r\n" + //
                     "              >&nbsp;\r\n" + //
                     "              &nbsp;<em\r\n" + //
@@ -236,8 +221,8 @@ public class EmailService {
                     "        </div>\r\n" + //
                     "      </div>\r\n" + //
                     "      <div class=\"footer\">\r\n" + //
-                    "        <p>Hội nghị sự kiện, hội thảo TheEvent</p>\r\n" + //
-                    "        <p>Trung tâm phục vụ sự kiện cộng đồng</p>\r\n" + //
+                    "        <p>Hội nghị món, hội thảo TheItem</p>\r\n" + //
+                    "        <p>Trung tâm phục vụ món cộng đồng</p>\r\n" + //
                     "        <p>\r\n" + //
                     "          Điện thoại Văn phòng: 0292.3872275 - Điện thoại di động: 0975 185 994\r\n" + //
                     "          (Zalo)\r\n" + //

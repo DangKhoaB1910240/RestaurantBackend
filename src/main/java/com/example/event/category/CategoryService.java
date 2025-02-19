@@ -1,4 +1,4 @@
-package com.example.event.organizer;
+package com.example.event.category;
 
 import java.util.List;
 
@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import com.example.event.event.EventRepository;
 import com.example.event.exception.AlreadyExistsException;
 import com.example.event.exception.NotFoundException;
+import com.example.event.item.ItemRepository;
 import com.example.event.logger.Logger;
 import com.example.event.logger.LoggerService;
 import com.example.event.role.Role;
@@ -17,28 +17,28 @@ import com.example.event.user.User;
 import com.example.event.user.UserRepository;
 
 @Service
-public class OrganizerService {
-    private OrganizerRepository organizerRepository;
-    private EventRepository eventRepository;
+public class CategoryService {
+    private CategoryRepository organizerRepository;
+    private ItemRepository eventRepository;
     private LoggerService loggerService;
     private UserRepository userRepository;
     @Autowired
-    public OrganizerService(OrganizerRepository organizerRepository, EventRepository eventRepository,LoggerService loggerService,UserRepository userRepository) {
+    public CategoryService(CategoryRepository organizerRepository, ItemRepository eventRepository,LoggerService loggerService,UserRepository userRepository) {
         this.organizerRepository = organizerRepository;
         this.eventRepository = eventRepository;
         this.loggerService = loggerService;
         this.userRepository = userRepository;
     }
-    public List<Organizer> getAllOrganizers(String organizerName) {
-        List<Organizer> organizers = organizerRepository.findAll();
-        organizers.removeIf((o) -> !o.getOrganizerName().contains(organizerName));
+    public List<Category> getAllOrganizers(String name) {
+        List<Category> organizers = organizerRepository.findAll();
+        organizers.removeIf((o) -> !o.getName().contains(name));
         return organizers;
     }
     public void deleteOrganizerById(Integer id, Integer userId) {
         
-        Organizer o = organizerRepository.findById(id).orElseThrow(() -> new NotFoundException("Không tồn tại nhà tổ chức với id "+id));
-        if(eventRepository.existsByOrganizerId(id)) {
-            throw new AlreadyExistsException("Dữ liệu nhà tổ chức \""+o.getOrganizerName()+"\" đang được sử dụng");
+        Category o = organizerRepository.findById(id).orElseThrow(() -> new NotFoundException("Không tồn tại danh mục với id "+id));
+        if(eventRepository.existsByCategoryId(id)) {
+            throw new AlreadyExistsException("Dữ liệu danh mục \""+o.getName()+"\" đang được sử dụng");
         }
         if(userId!=null) {
             User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Không tồn tại user"));
@@ -60,27 +60,23 @@ public class OrganizerService {
                     roleName += " ,";
                 }
             }
-            loggerService.addLogger(user, "- Xóa nhà tổ chức: "+o.getOrganizerName(),roleName);
+            loggerService.addLogger(user, "- Xóa danh mục: "+o.getName(),roleName);
             organizerRepository.deleteById(id);
         } 
         
     }
-    public void updateOrganizerById(Integer id, Integer userId,Organizer organizer) {
+    public void updateOrganizerById(Integer id, Integer userId,Category organizer) {
         //Kiểm tra id có tồn tại không
-        Organizer organizer2 = organizerRepository.findById(id).orElseThrow(() -> new NotFoundException("Không tồn tại nhà tổ chức với id: "+id));
-        organizer2.setAddress(organizer.getAddress());
-        organizer2.setEmail(organizer.getEmail());
-        organizer2.setImg(organizer.getImg());
-        organizer2.setOrganizerName(organizer.getOrganizerName());
-        organizer2.setPhone(organizer.getPhone());
+        Category organizer2 = organizerRepository.findById(id).orElseThrow(() -> new NotFoundException("Không tồn tại danh mục với id: "+id));
+        organizer2.setName(organizer.getName());
         organizerRepository.save(organizer2);
         //Viết logger
-        String content = "- Cập nhật nhà tổ chức: \"Tên nhà tổ chức: "+organizer.getOrganizerName()+"\"";
+        String content = "- Cập nhật danh mục: \"Tên danh mục: "+organizer.getName()+"\"";
         addLogger(userId, content);
     }
-    public void addOrganizer(Organizer organizer,Integer userId) {
+    public void addOrganizer(Category organizer,Integer userId) {
         organizerRepository.save(organizer);
-        addLogger(userId, "- Thêm nhà tổ chức: \"Tên nhà tổ chức: "+organizer.getOrganizerName()+"\"");
+        addLogger(userId, "- Thêm danh mục: \"Tên danh mục: "+organizer.getName()+"\"");
     }
     private void addLogger(Integer userId,String content) {
         User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Không tồn tại user "));
@@ -104,7 +100,7 @@ public class OrganizerService {
             }
         loggerService.addLogger(user,content,roleName);
     }
-    public Organizer getInfoById(Integer id) {
-        return organizerRepository.findById(id).orElseThrow(() -> new NotFoundException("Không tồn tại nhà tổ chức với id: "+id));
+    public Category getInfoById(Integer id) {
+        return organizerRepository.findById(id).orElseThrow(() -> new NotFoundException("Không tồn tại danh mục với id: "+id));
     }
 }

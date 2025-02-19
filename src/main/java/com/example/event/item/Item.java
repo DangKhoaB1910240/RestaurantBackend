@@ -1,10 +1,9 @@
-package com.example.event.event;
+package com.example.event.item;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.example.event.activity.Activity;
-import com.example.event.organizer.Organizer;
+import com.example.event.category.Category;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -25,25 +24,17 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Event {
+public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    private String eventName;
-    private LocalDateTime startDateTime;
-    private LocalDateTime endDateTime;
-    private String description;
-    private Integer maxQuantity;
+    private String itemName;
     private Boolean status = true;
-    private int totalRegistered = 0; // Tổng số người đăng ký
-    private int totalAttended = 0; // Tổng số người tham gia thực tế
     private String img;
     @ManyToOne
-    @JoinColumn(name = "organizer_id", nullable = false)
-    private Organizer organizer;
-    private Integer tinhThanhId;
-    private Integer quanHuyenId;
-    private Integer phuongXaId;
-    private String address;
+    @JoinColumn(name = "caterogy_id", nullable = false)
+    private Category category;
+    private String description;
     private Long cost;
+    // private Boolean
 }

@@ -1,4 +1,4 @@
-package com.example.event.organizer;
+package com.example.event.category;
 
 import java.util.List;
 
@@ -21,23 +21,23 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("api/v1/organizer")
+@RequestMapping("api/v1/category")
 @CrossOrigin(origins = {"http://localhost:4200"})
-public class OrganizerResource {
+public class CategoryResource {
     @Autowired
-    private OrganizerService organizerService;
+    private CategoryService organizerService;
 
     @GetMapping()
-    public ResponseEntity<List<Organizer>> getAllOrganizers(@RequestParam(required = false) String organizerName) {
-        return ResponseEntity.status(HttpStatus.OK).body(organizerService.getAllOrganizers(organizerName));
+    public ResponseEntity<List<Category>> getAllOrganizers(@RequestParam(required = false) String name) {
+        return ResponseEntity.status(HttpStatus.OK).body(organizerService.getAllOrganizers(name));
     }
     @GetMapping("{id}")
-    public ResponseEntity<Organizer> getInfoById(@PathVariable Integer id) {
+    public ResponseEntity<Category> getInfoById(@PathVariable Integer id) {
         return ResponseEntity.status(HttpStatus.OK).body(organizerService.getInfoById(id));
     }
 
     @PostMapping("/user/{userId}")
-    public ResponseEntity<Void> addOrganizer(@Valid @RequestBody Organizer organizer,@PathVariable Integer userId) {
+    public ResponseEntity<Void> addOrganizer(@Valid @RequestBody Category organizer,@PathVariable Integer userId) {
         organizerService.addOrganizer(organizer,userId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -49,7 +49,7 @@ public class OrganizerResource {
     }
     //Cập nhật có 2 loại PUT & PATCH
     @PatchMapping("/{id}/user/{userId}")
-    public ResponseEntity<Void> updateOrganizerById(@PathVariable Integer id,@PathVariable Integer userId,@Valid @RequestBody Organizer organizer) {
+    public ResponseEntity<Void> updateOrganizerById(@PathVariable Integer id,@PathVariable Integer userId,@Valid @RequestBody Category organizer) {
         organizerService.updateOrganizerById(id,userId,organizer);
         return ResponseEntity.noContent().build();
     }

@@ -1,4 +1,4 @@
-package com.example.event.event;
+package com.example.event.item;
 
 import java.util.List;
 
@@ -17,20 +17,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.event.organizer.Organizer;
+import com.example.event.category.Category;
 
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("api/v1/event")
+@RequestMapping("api/v1/item")
 @CrossOrigin(origins = {"http://localhost:4200"})
-public class EventResource {
+public class ItemResource {
     @Autowired
-    private EventService eventService;
+    private ItemService eventService;
 
     @GetMapping("/{eventId}")
-    public ResponseEntity<Event> getEventById(@PathVariable Integer eventId) {
-        Event event = eventService.getEventById(eventId);
+    public ResponseEntity<Item> getItemById(@PathVariable Integer eventId) {
+        Item event = eventService.getItemById(eventId);
 
         if (event != null) {
             return ResponseEntity.ok(event);
@@ -39,47 +39,47 @@ public class EventResource {
         }
     }
     @GetMapping()
-    public List<Event> getAllEvents() {
-        return eventService.getAllEvents();
+    public List<Item> getAllItems() {
+        return eventService.getAllItems();
     }
 
     @GetMapping("/by-organizer")
-    public List<Event> getEventsByOrganizerId(@RequestParam Integer organizerId) {
-        return eventService.getEventsByOrganizerId(organizerId);
+    public List<Item> getItemsByOrganizerId(@RequestParam Integer organizerId) {
+        return eventService.getItemsByOrganizerId(organizerId);
     }
     @GetMapping("/status")
-    public ResponseEntity<List<Event>> getEventsByStatus(@RequestParam EventStatus status) {
-        List<Event> events = eventService.getEventsByStatus(status);
+    public ResponseEntity<List<Item>> getItemsByStatus(@RequestParam ItemStatus status) {
+        List<Item> events = eventService.getItemsByStatus(status);
         return ResponseEntity.ok(events);
     }
     @GetMapping("/filter")
-    public ResponseEntity<List<Event>> getEventsByStatusAndOrganizerIdAndName(
-        @RequestParam(required = false) EventStatus eventStatus,
+    public ResponseEntity<List<Item>> getItemsByStatusAndOrganizerIdAndName(
+        @RequestParam(required = false) ItemStatus eventStatus,
         @RequestParam(required = false) Integer organizerId,
         @RequestParam(required = false) String eventName
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(eventService.getEventsByStatusAndOrganizerIdAndName(eventStatus,organizerId,eventName));
+        return ResponseEntity.status(HttpStatus.OK).body(eventService.getItemsByStatusAndOrganizerIdAndName(eventStatus,organizerId,eventName));
     }
     @GetMapping("/by-organizer-excluding")
-    public ResponseEntity<List<Event>> getEventsByOrganizerIdExcludingEventId(@RequestParam Integer organizerId, @RequestParam Integer eventId) {
-        return ResponseEntity.status(HttpStatus.OK).body(eventService.getEventsByOrganizerIdExcludingEventId(organizerId, eventId));
+    public ResponseEntity<List<Item>> getItemsByOrganizerIdExcludingItemId(@RequestParam Integer organizerId, @RequestParam Integer eventId) {
+        return ResponseEntity.status(HttpStatus.OK).body(eventService.getItemsByOrganizerIdExcludingItemId(organizerId, eventId));
     }
     @PostMapping("/user/{userId}")
-    public ResponseEntity<Void> addEvent(@Valid @RequestBody EventRequestDTO eventRequestDTO,
+    public ResponseEntity<Void> addItem(@Valid @RequestBody ItemRequestDTO eventRequestDTO,
     @PathVariable Integer userId) {
         
-        eventService.addEvent(eventRequestDTO,userId);
+        eventService.addItem(eventRequestDTO,userId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
     //Cập nhật có 2 loại PUT & PATCH
     @PatchMapping("/{id}/user/{userId}")
-    public ResponseEntity<Void> updateEventById(@PathVariable Integer id,@PathVariable Integer userId,@Valid @RequestBody EventRequestDTO eventRequestDTO) {
-        eventService.updateEventById(id,userId,eventRequestDTO);
+    public ResponseEntity<Void> updateItemById(@PathVariable Integer id,@PathVariable Integer userId,@Valid @RequestBody ItemRequestDTO eventRequestDTO) {
+        eventService.updateItemById(id,userId,eventRequestDTO);
         return ResponseEntity.noContent().build();
     }
     @DeleteMapping("/{id}/user/{userId}")
-    public ResponseEntity<Void> deleteEventById(@PathVariable Integer id,@PathVariable Integer userId) {
-        eventService.deleteEventById(id,userId);
+    public ResponseEntity<Void> deleteItemById(@PathVariable Integer id,@PathVariable Integer userId) {
+        eventService.deleteItemById(id,userId);
         return ResponseEntity.noContent().build();
     }
     

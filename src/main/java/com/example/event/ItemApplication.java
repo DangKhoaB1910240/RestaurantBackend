@@ -6,10 +6,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
-public class EventApplication {
+public class ItemApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(EventApplication.class, args);
+		SpringApplication.run(ItemApplication.class, args);
 	}
 	@Bean
     public RestTemplate restTemplate() {

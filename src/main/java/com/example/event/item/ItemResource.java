@@ -44,8 +44,8 @@ public class ItemResource {
     }
 
     @GetMapping("/by-organizer")
-    public List<Item> getItemsByOrganizerId(@RequestParam Integer organizerId) {
-        return eventService.getItemsByOrganizerId(organizerId);
+    public List<Item> getItemsByCategoryId(@RequestParam Integer organizerId) {
+        return eventService.getItemsByCategoryId(organizerId);
     }
     @GetMapping("/status")
     public ResponseEntity<List<Item>> getItemsByStatus(@RequestParam ItemStatus status) {
@@ -53,16 +53,16 @@ public class ItemResource {
         return ResponseEntity.ok(events);
     }
     @GetMapping("/filter")
-    public ResponseEntity<List<Item>> getItemsByStatusAndOrganizerIdAndName(
+    public ResponseEntity<List<Item>> getItemsByStatusAndCategoryIdAndName(
         @RequestParam(required = false) ItemStatus eventStatus,
         @RequestParam(required = false) Integer organizerId,
-        @RequestParam(required = false) String eventName
+        @RequestParam(required = false) String itemName
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(eventService.getItemsByStatusAndOrganizerIdAndName(eventStatus,organizerId,eventName));
+        return ResponseEntity.status(HttpStatus.OK).body(eventService.getItemsByStatusAndCategoryIdAndName(eventStatus,organizerId,itemName));
     }
     @GetMapping("/by-organizer-excluding")
-    public ResponseEntity<List<Item>> getItemsByOrganizerIdExcludingItemId(@RequestParam Integer organizerId, @RequestParam Integer eventId) {
-        return ResponseEntity.status(HttpStatus.OK).body(eventService.getItemsByOrganizerIdExcludingItemId(organizerId, eventId));
+    public ResponseEntity<List<Item>> getItemsByCategoryIdExcludingItemId(@RequestParam Integer organizerId, @RequestParam Integer eventId) {
+        return ResponseEntity.status(HttpStatus.OK).body(eventService.getItemsByCategoryIdExcludingItemId(organizerId, eventId));
     }
     @PostMapping("/user/{userId}")
     public ResponseEntity<Void> addItem(@Valid @RequestBody ItemRequestDTO eventRequestDTO,

@@ -39,16 +39,14 @@ public class ItemService {
     public List<Item> getAllItems() {
         Specification<Item> spec = (root, query, cb) -> {
             query.orderBy(
-                cb.asc(root.get("organizer").get("id")),
-                cb.asc(root.get("startDateTime")),
-                cb.asc(root.get("endDateTime"))
+                cb.asc(root.get("category").get("id"))
             );
             return cb.conjunction();
         };
         return eventRepository.findAll(spec);
     }
-    public List<Item> getItemsByOrganizerId(Integer organizerId) {
-        return eventRepository.findByCategoryId(organizerId);
+    public List<Item> getItemsByCategoryId(Integer categoryId) {
+        return eventRepository.findByCategoryId(categoryId);
     }
     public Item getItemById(Integer eventId) {
         return eventRepository.findById(eventId).orElse(null);
@@ -94,49 +92,49 @@ public class ItemService {
         } 
         
     }
-    public List<Item> getItemsByStatusAndOrganizerIdAndName(
-         ItemStatus eventStatus,
-         Integer organizerId,
+    public List<Item> getItemsByStatusAndCategoryIdAndName(
+         ItemStatus itemstatus,
+         Integer categoryId,
          String eventName
     ) {
         LocalDateTime now = LocalDateTime.now();
         Specification<Item> spec = (root, query, cb) -> {
             query.orderBy(
-                cb.asc(root.get("organizer").get("id")),
-                cb.asc(root.get("startDateTime")),
-                cb.asc(root.get("endDateTime"))
+                cb.asc(root.get("category").get("id"))
             );
             return cb.conjunction();
         };
         
-        List<Item> events = eventRepository.findAll(spec);
-        if(eventStatus !=null) {
-            switch (eventStatus) {
-                // case SAU:
-                //     events.retainAll(eventRepository.findByStartDateTimeAfter(now));
-                //     break;
-                    
-                // case DANG:
-                //     events.retainAll(eventRepository.findByStartDateTimeBeforeAndEndDateTimeAfter(now, now));
-                //     break;
-                // case TRUOC:
-                //     events.retainAll(eventRepository.findByEndDateTimeBefore(now));
-                //     break;
-                default:
+        List<Item> items = eventRepository.findAll(spec);
+        if(itemstatus !=null) {
+            switch (itemstatus) {
+                case BESTSELLER:
+                    items.removeIf(item -> !item.getBestSeller());
                     break;
-                    
+                case YEUTHICHNHAT:
+                    items.removeIf(item -> !item.getYeuThichNhat());
+                    break;
+                case MONMOINHAT:
+                    items.removeIf(item -> !item.getMonMoiNhat());
+                    break;
+                case MONCHAY:
+                    items.removeIf(item -> !item.getMonChay());
+                    break;
+                case TATCA:
+                default:
+                    break; // Không lọc, giữ nguyên danh sách
             }
         }
-        if (organizerId != null) {
-            events.removeIf(e ->  !e.getCategory().getId().equals(organizerId));
+        if (categoryId != null) {
+            items.removeIf(e ->  !e.getCategory().getId().equals(categoryId));
         }
         if (eventName != null && !eventName.isEmpty()) {
-            events.removeIf(e -> !e.getItemName().toLowerCase().contains(eventName.toLowerCase()));
+            items.removeIf(e -> !e.getItemName().toLowerCase().contains(eventName.toLowerCase()));
         }
-        return events;
+        return items;
     }
-    public List<Item> getItemsByOrganizerIdExcludingItemId(Integer organizerId, Integer eventId) {
-        return eventRepository.findTop5ByCategoryIdAndIdNot(organizerId, eventId);
+    public List<Item> getItemsByCategoryIdExcludingItemId(Integer categoryId, Integer eventId) {
+        return eventRepository.findTop5ByCategoryIdAndIdNot(categoryId, eventId);
     }
     @Transactional
     public void addItem( ItemRequestDTO eventRequestDTO,

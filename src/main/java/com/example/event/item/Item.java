@@ -36,5 +36,9 @@ public class Item {
     private Category category;
     private String description;
     private Long cost;
-    // private Boolean
+    private Boolean bestSeller = false;
+    private Boolean yeuThichNhat = false;
+    private Boolean monMoiNhat = false;
+    private Boolean monChay = false;
+    
 }

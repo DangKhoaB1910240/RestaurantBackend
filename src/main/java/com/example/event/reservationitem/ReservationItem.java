@@ -2,6 +2,7 @@ package com.example.event.reservationitem;
 
 import com.example.event.item.Item;
 import com.example.event.reservation.Reservation;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -24,6 +25,7 @@ public class ReservationItem {
 
     @ManyToOne
     @JoinColumn(name = "reservation_id", nullable = false)
+    @JsonBackReference
     private Reservation reservation;
 
     @ManyToOne

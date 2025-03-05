@@ -7,6 +7,8 @@ import com.example.event.item.Item;
 import com.example.event.reservationitem.ReservationItem;
 import com.example.event.table.Table;
 import com.example.event.user.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -32,6 +34,7 @@ public class Reservation {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user; // Người đặt
 
     @ManyToOne
@@ -44,6 +47,7 @@ public class Reservation {
     private Integer status; // Trạng thái đặt bàn 0: Chưa xử lý, 1: Đã cọc, 2: Đã nhận bàn, 3: Đã hủy bỏ
 
     @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<ReservationItem> items; // Danh sách món ăn đi kèm nếu có
     private LocalDateTime ngayTao; // Ngày tạo, mặc định là ngày giờ hiện tại
     private Integer orderType;

@@ -1,11 +1,13 @@
 package com.example.event.reservation;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import com.example.event.cart.Cart;
@@ -25,6 +27,7 @@ import com.example.event.user.User;
 import com.example.event.user.UserRepository;
 import com.example.event.vnpay.VNPayResource;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -41,6 +44,32 @@ public class ReservationService {
     private final EmailService emailService;
     private final VNPayResource vnPayResource;
     private final CartService cartService;
+
+    public List<Reservation> getReservationsByUser(Integer userId) {
+        return reservationRepository.findByUserId(userId);
+    }
+
+    // @Scheduled(fixedRate = 1000) // Chạy mỗi giây (1,000ms)
+    // public void deleteUnpaidReservations() {
+    // LocalDateTime oneSecondAgo = LocalDateTime.now().minusSeconds(1);
+    // List<Reservation> unpaidReservations =
+    // reservationRepository.findByStatusAndNgayTaoBefore(0, oneSecondAgo);
+
+    // reservationRepository.deleteAll(unpaidReservations);
+    // if (!unpaidReservations.isEmpty()) {
+    // System.out.println("Đã xóa " + unpaidReservations.size() + " đơn chưa thanh
+    // toán");
+    // }
+    // }
+
+    @Scheduled(fixedRate = 900000) // Chạy mỗi 15 phút (900,000ms)
+    public void deleteUnpaidReservations() {
+        LocalDateTime fifteenMinutesAgo = LocalDateTime.now().minusMinutes(15);
+        List<Reservation> unpaidReservations = reservationRepository.findByStatusAndNgayTaoBefore(0, fifteenMinutesAgo);
+
+        reservationRepository.deleteAll(unpaidReservations);
+        System.out.println("Đã xóa " + unpaidReservations.size() + " đơn chưa thanh toán");
+    }
 
     @Transactional
     public String bookTable(ReservationDto request) throws UnsupportedEncodingException {

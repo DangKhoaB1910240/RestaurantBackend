@@ -37,7 +37,7 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class UserService {
-    
+
     private UserRepository userRepository;
 
     private PasswordEncoder passwordEncoder;
@@ -50,7 +50,7 @@ public class UserService {
 
     private LoggerService loggerService;
 
-    @Autowired //tiêm phụ thuộc vào
+    @Autowired // tiêm phụ thuộc vào
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleRepository roleRepository,
             AuthenticationManager authenticationManager, JwtGenerator jwtGenerator, LoggerService loggerService) {
         this.userRepository = userRepository;
@@ -60,15 +60,18 @@ public class UserService {
         this.jwtGenerator = jwtGenerator;
         this.loggerService = loggerService;
     }
+
     public User getInfoByUsername(String username) {
-        return userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException("Không tồn tại user có username: "+username));
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("Không tồn tại user có username: " + username));
     }
-    @Transactional //Đánh dấu là 1 giao dịch, nếu có vấn đề nó rollback hết
-    public void register(User user,List<String> roleNames) {
+
+    @Transactional // Đánh dấu là 1 giao dịch, nếu có vấn đề nó rollback hết
+    public void register(User user, List<String> roleNames) {
 
         // Nếu tài khoản tồn tại thì ném ra exception
 
-        if(userRepository.existsByUsername(user.getUsername())) {
+        if (userRepository.existsByUsername(user.getUsername())) {
             throw new AlreadyExistsException("Tài khoản bạn đăng ký đã tồn tại rồi");
         }
 
@@ -91,18 +94,19 @@ public class UserService {
     }
 
     public AuthenticatedUserDTO login(User user) {
-        User u = userRepository.findByUsername(user.getUsername()).orElseThrow(() -> new NotFoundException("Không tồn tại tài khoản này"));
-        if(!u.getStatus()) {
+        User u = userRepository.findByUsername(user.getUsername())
+                .orElseThrow(() -> new NotFoundException("Không tồn tại tài khoản này"));
+        if (!u.getStatus()) {
             throw new InvalidValueException("Tài khoản đã bị khóa");
         }
         Authentication authentication = authenticationManager
-            .authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+                .authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String token = jwtGenerator.generateToken(authentication);
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         List<String> roles = userDetails.getAuthorities().stream()
-                                    .map(GrantedAuthority::getAuthority)
-                                    .collect(Collectors.toList());
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
 
         AuthenticatedUserDTO authenticatedUser = new AuthenticatedUserDTO();
         authenticatedUser.setToken(token);
@@ -111,12 +115,13 @@ public class UserService {
     }
 
     public List<String> getRoleByUsername(String username) {
-        if(!userRepository.existsByUsername(username)) {
+        if (!userRepository.existsByUsername(username)) {
             throw new UsernameNotFoundException(username + " not found");
-        }else { 
+        } else {
             return userRepository.findRoleNamesByUsername(username);
         }
     }
+
     @Transactional
     public void changePassword(String username, String oldPassword, String newPassword) {
         User existingUser = userRepository.findByUsername(username)
@@ -136,40 +141,45 @@ public class UserService {
 
     public List<User> getAllUsers(String username) {
         List<User> users = userRepository.findAll();
-        users.removeIf((u) -> !(u.getFullname().contains(username) || u.getUsername().contains(username) ));
+        users.removeIf((u) -> !(u.getFullname().contains(username) || u.getUsername().contains(username)));
         return users;
     }
+
     @Transactional
-    public void deleteById(Integer id,Integer userId) {
+    public void deleteById(Integer id, Integer userId) {
 
     }
-    public void updateById(Integer id, Integer userId,User user) {
-        User user2 = userRepository.findById(id).orElseThrow(() -> new NotFoundException("Không tồn tại người dùng này"));
+
+    public void updateById(Integer id, Integer userId, User user) {
+        User user2 = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Không tồn tại người dùng này"));
         user2.setStatus(user.getStatus());
-        String trangThai = user.getStatus() ? "Hoạt động": "Khóa";
-        addLogger(userId,"- Cập nhật trạng thái tài khoản \""+user2.getUsername()+"\" thành "+trangThai);
+        String trangThai = user.getStatus() ? "Hoạt động" : "Khóa";
+        addLogger(userId, "- Cập nhật trạng thái tài khoản \"" + user2.getUsername() + "\" thành " + trangThai);
         userRepository.save(user2);
     }
-    private void addLogger(Integer userId,String content) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Không tồn tại người dùng "));
-        String roleName = new String();
-            boolean lastElement = false;
 
-            // Lặp qua các role
-            for (int i = 0; i < user.getRoles().size(); i++) {
-                Role r = user.getRoles().get(i);
-                roleName += r.getName();
-                
-                // Kiểm tra nếu phần tử hiện tại là phần tử cuối cùng
-                if (i == user.getRoles().size() - 1) {
-                    lastElement = true;
-                }
-                
-                // Nếu không phải phần tử cuối cùng, thêm dấu phẩy
-                if (!lastElement) {
-                    roleName += " ,";
-                }
+    private void addLogger(Integer userId, String content) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Không tồn tại người dùng "));
+        String roleName = new String();
+        boolean lastElement = false;
+
+        // Lặp qua các role
+        for (int i = 0; i < user.getRoles().size(); i++) {
+            Role r = user.getRoles().get(i);
+            roleName += r.getName();
+
+            // Kiểm tra nếu phần tử hiện tại là phần tử cuối cùng
+            if (i == user.getRoles().size() - 1) {
+                lastElement = true;
             }
-        loggerService.addLogger(user,content,roleName);
+
+            // Nếu không phải phần tử cuối cùng, thêm dấu phẩy
+            if (!lastElement) {
+                roleName += " ,";
+            }
+        }
+        loggerService.addLogger(user, content, roleName);
     }
 }

@@ -3,8 +3,7 @@ package com.example.event.user;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.annotations.ManyToAny;
-
+import com.example.event.cart.Cart;
 import com.example.event.role.Role;
 
 import jakarta.persistence.CascadeType;
@@ -16,10 +15,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -47,4 +44,6 @@ public class User {
     )
     private List<Role> roles = new ArrayList<>();
     private Boolean status = true;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Cart> cartItems = new ArrayList<>();
 }

@@ -1,4 +1,5 @@
 package com.example.event.email;
+
 import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -14,6 +15,8 @@ import com.example.event.exception.NotFoundException;
 import com.example.event.external.ExternalAPIService;
 import com.example.event.external.LocationData;
 import com.example.event.item.Item;
+import com.example.event.reservation.Reservation;
+import com.example.event.table.Table;
 import com.example.event.user.User;
 
 import jakarta.mail.MessagingException;
@@ -25,23 +28,30 @@ public class EmailService {
     private JavaMailSender mailSender;
     @Autowired
     private ExternalAPIService externalAPIService;
-    
-    public void sendEmail(Email email, User user,Item event, Category organizer) {
-        //Basic thôi
+
+    public void sendEmail(Email email, User user, Table table, Long fee, Reservation reservation) {
+        // Basic thôi
         // SimpleMailMessage message = new SimpleMailMessage();
         // message.setFrom("khoab1910240@gmail.com");
         // message.setTo(toEmail);
         // message.setText(body);
         // message.setSubject(subject);
         // mailSender.send(message);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy"); 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
         MimeMessage message = mailSender.createMimeMessage();
-        // String loaiGhe = registration.getLoaiGhe() == 1 ? "Ghế vip" : "Ghế thường";
-        Long gia = event.getCost();
         DecimalFormat formatter2 = new DecimalFormat("#,###.###");
+        String tableNumber = new String("Mang đi");
+        String capacity = new String();
+        String type = new String(); // Loại bàn (VIP, THUONG) // 0 là thường, 1 là vip
+
+        if (table != null) {
+            tableNumber = table.getTableNumber().toString();
+            capacity = table.getCapacity().toString();
+            type = table.getType() == 1 ? "Vip" : "Thường";
+        }
         try {
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            helper.setFrom("Dormitory@gmail.com");
+            helper.setFrom("TamTam@gmail.com");
             helper.setTo(email.getToEmail());
             helper.setSubject(email.getSubject());
 
@@ -96,73 +106,64 @@ public class EmailService {
                     "    <div class=\"email-container\">\r\n" + //
                     "      <div class=\"header\">\r\n" + //
                     "        <h3 style=\"font-weight: bold\">\r\n" + //
-                    "          CHÚC MỪNG BẠN ĐĂNG KÝ SỰ KIỆN THÀNH CÔNG\r\n" + //
+                    "          CHÚC MỪNG BẠN ĐẶT BÀN THÀNH CÔNG\r\n" + //
                     "        </h3>\r\n" + //
                     "      </div>\r\n" + //
                     "      <table style=\"background-color: white\">\r\n" + //
                     "        <tr>\r\n" + //
                     "          <td class=\"title\">Tài khoản:</td>\r\n" + //
-                    "          <td>"+user.getUsername()+"</td>\r\n" + //
+                    "          <td>" + user.getUsername() + "</td>\r\n" + //
                     "        </tr>\r\n" + //
                     "        <tr>\r\n" + //
                     "          <td class=\"title\">Tên:</td>\r\n" + //
-                    "          <td>"+user.getFullname()+"</td>\r\n" + //
+                    "          <td>" + user.getFullname() + "</td>\r\n" + //
                     "        </tr>\r\n" + //
                     "        <tr>\r\n" + //
                     "          <td class=\"title\">Số điện thoại:</td>\r\n" + //
-                    "          <td>"+user.getPhoneNumber()+"</td>\r\n" + //
+                    "          <td>" + user.getPhoneNumber() + "</td>\r\n" + //
                     "        </tr>\r\n" + //
                     "        <tr>\r\n" + //
                     "          <td class=\"title\">Email:</td>\r\n" + //
-                    "          <td>"+user.getEmail()+"</td>\r\n" + //
+                    "          <td>" + user.getEmail() + "</td>\r\n" + //
                     "        </tr>\r\n" + //
                     "        <tr>\r\n" + //
                     "          <td class=\"title\">Địa chỉ:</td>\r\n" + //
-                    "          <td>"+user.getAddress()+"</td>\r\n" + //
+                    "          <td>" + user.getAddress() + "</td>\r\n" + //
                     "        </tr>\r\n" + //
-                    
+
                     "      </table>\r\n" + //
-                    
-                    "      <h4 style=\"text-align: center\">Thông tin món</h4>\r\n" + //
+
+                    "      <h4 style=\"text-align: center\">Thông tin bàn</h4>\r\n" + //
                     "      <table style=\"background-color: white\">\r\n" + //
                     "        <tr>\r\n" + //
-                    "          <td class=\"title\">danh mục:</td>\r\n" + //
-                    "          <td>"+organizer.getName()+"</td>\r\n" + //
+                    "          <td class=\"title\">Bàn số:</td>\r\n" + //
+                    "          <td>" + tableNumber + "</td>\r\n" + //
                     "        </tr>\r\n" + //
                     "        <tr>\r\n" + //
-                    "          <td class=\"title\">Sự kiện:</td>\r\n" + //
-                    "          <td>"+event.getItemName()+"</td>\r\n" + //
+                    "          <td class=\"title\">Số ghế:</td>\r\n" + //
+                    "          <td>" + capacity + "</td>\r\n" + //
                     "        </tr>\r\n" + //
                     "        <tr>\r\n" + //
-                    "          <td class=\"title\">Địa chỉ:</td>\r\n" + //
-                    "          <td>Đường Nguyễn Văn A, phường Mỹ Đình 1, quận Nam Từ Liêm, thành phố Hà Nội</td>\r\n" + //
+                    "          <td class=\"title\">Loại bàn:</td>\r\n" + //
+                    "          <td>" + type + "</td>\r\n" + //
                     "        </tr>\r\n" + //
                     "        <tr>\r\n" + //
-                    "          <td class=\"title\">Loại ghế:</td>\r\n" + //
-                    "          <td></td>\r\n" + //
+                    "          <td class=\"title\">Tiền cọc:</td>\r\n" + //
+                    "          <td>" + formatter2.format((fee)) + "đ</td>\r\n" + //
+                    "        </tr>\r\n" + //
+
+                    "        <tr>\r\n" + //
+                    "          <td class=\"title\">Thời gian tạo đơn:</td>\r\n" + //
+                    "          <td>" + formatter.format(reservation.getNgayTao()) + "</td>\r\n" + //
                     "        </tr>\r\n" + //
                     "        <tr>\r\n" + //
-                    "          <td class=\"title\">Giá vé:</td>\r\n" + //
-                    "          <td>"+formatter2.format((gia))+"đ</td>\r\n" + //
-                    "        </tr>\r\n" + //
-                   "        <tr>\r\n" + //
-                    "          <td class=\"title\">Phương thức thanh toán:</td>\r\n" + //
-                    "          <td></td>\r\n" + //
-                    "        </tr>\r\n" + //
-                   
-                    "        <tr>\r\n" + //
-                    "          <td class=\"title\">Ngày đặt :</td>\r\n" + //
-                    "          <td></td>\r\n" + //
-                    "        </tr>\r\n" + //
-                    "        <tr>\r\n" + //
-                    "          <td class=\"title\">Ngày nhận:</td>\r\n" + //
-                    "          <td></td>\r\n" + //
+                    "          <td class=\"title\">Thời gian nhận bàn:</td>\r\n" + //
+                    "          <td>" + formatter.format(reservation.getReservationTime()) + "</td>\r\n" + //
                     "        </tr>\r\n" + //
                     "      </table>\r\n" + //
                     "      <div>\r\n" + //
                     "        <div>\r\n" + //
-                   
-                    
+
                     "          <p\r\n" + //
                     "            style=\"\r\n" + //
                     "              font-size: 13px;\r\n" + //
@@ -176,15 +177,15 @@ public class EmailService {
                     "                ><em\r\n" + //
                     "                  >&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<u>Lưu ý:</u></em\r\n" + //
                     "                ></strong\r\n" + //
-                    "              >&nbsp;Nếu không tham gia đúng thời hạn đăng ký, bạn sẽ bị <em\r\n" + //
+                    "              >&nbsp;Nếu không lại nhận bàn đúng thời hạn đặt, bạn sẽ bị <em\r\n" + //
                     "                ><b>KHÓA TÀI KHOẢN</b></em\r\n" + //
-                    "              >&nbsp;, và không thể đăng ký ở các món khác.<strong\r\n" + //
+                    "              >&nbsp;, và không thể đặt bàn khác.<strong\r\n" + //
                     "                >&nbsp;</strong\r\n" + //
                     "              >&nbsp;\r\n" + //
                     "              &nbsp;<em\r\n" + //
                     "                ></em\r\n" + //
                     "              >&nbsp;</span\r\n" + //
-                    "            ><br />\r\n" + //fn
+                    "            ><br />\r\n" + // fn
                     "          </p>\r\n" + //
                     "          <ol\r\n" + //
                     "            start=\"4\"\r\n" + //
@@ -198,10 +199,10 @@ public class EmailService {
                     "              text-align: justify;\r\n" + //
                     "            \"\r\n" + //
                     "          >\r\n" + //
-                    
+
                     "          </ol>\r\n" + //
                     "\r\n" + //
-                   
+
                     "          <div style=\"text-align: justify\">\r\n" + //
                     "            <font\r\n" + //
                     "              color=\"#111417\"\r\n" + //
@@ -221,8 +222,8 @@ public class EmailService {
                     "        </div>\r\n" + //
                     "      </div>\r\n" + //
                     "      <div class=\"footer\">\r\n" + //
-                    "        <p>Hội nghị món, hội thảo TheItem</p>\r\n" + //
-                    "        <p>Trung tâm phục vụ món cộng đồng</p>\r\n" + //
+                    "        <p>Nhà hàng TamTam</p>\r\n" + //
+                    "        <p>Trung tâm phục vụ món ăn chất lượng</p>\r\n" + //
                     "        <p>\r\n" + //
                     "          Điện thoại Văn phòng: 0292.3872275 - Điện thoại di động: 0975 185 994\r\n" + //
                     "          (Zalo)\r\n" + //

@@ -10,7 +10,7 @@ public class NotFoundException extends RuntimeException {
 
     private String message;
 
-    private HttpStatusCode httpStatus = HttpStatus.NOT_FOUND ;
+    private HttpStatusCode httpStatus = HttpStatus.NOT_FOUND;
 
     public NotFoundException(String message) {
         this.message = message;

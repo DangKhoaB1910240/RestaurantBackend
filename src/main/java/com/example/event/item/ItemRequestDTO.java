@@ -9,6 +9,7 @@ import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,4 +20,8 @@ public class ItemRequestDTO {
     private Integer categoryId;
     private Long cost;
     private Boolean status = true;
+    private Boolean bestSeller;
+    private Boolean yeuThichNhat;
+    private Boolean monMoiNhat;
+    private Boolean monChay;
 }

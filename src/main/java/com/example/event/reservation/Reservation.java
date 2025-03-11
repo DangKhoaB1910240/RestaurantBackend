@@ -34,7 +34,6 @@ public class Reservation {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    @JsonIgnore
     private User user; // Người đặt
 
     @ManyToOne
@@ -51,6 +50,7 @@ public class Reservation {
     private List<ReservationItem> items; // Danh sách món ăn đi kèm nếu có
     private LocalDateTime ngayTao; // Ngày tạo, mặc định là ngày giờ hiện tại
     private Integer orderType;
+    private Long totalAmount = 0L;
 
     @PrePersist
     protected void onCreate() {

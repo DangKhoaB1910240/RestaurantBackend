@@ -57,6 +57,12 @@ public class ReservationResource {
         return ResponseEntity.ok(reservationService.bookTable(dto));
     }
 
+    @PostMapping("/admin/book")
+    public ResponseEntity<?> adminBookTable(@RequestBody AdminReservationRequest request) {
+        Reservation reservation = reservationService.adminOrderFood(request);
+        return ResponseEntity.ok(reservation);
+    }
+
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Reservation>> getReservationsByUser(@PathVariable Integer userId) {
         System.out.println(userId);

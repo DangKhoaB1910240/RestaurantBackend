@@ -66,6 +66,58 @@ public class ReservationService {
         return reservationRepository.findByUserId(userId);
     }
 
+    public Reservation adminOrderFood(AdminReservationRequest request) {
+        User user = null;
+        if (request.getUserId() != null) {
+            user = userRepository.findById(request.getUserId())
+                    .orElseThrow(() -> new NotFoundException("Không tìm thấy người dùng"));
+        }
+
+        Table table = null;
+        Integer orderType = 1; // Mặc định là mang đi
+        if (request.getTableId() != null) {
+            table = tableRepository.findById(request.getTableId())
+                    .filter(Table::getIsAvailable)
+                    .orElseThrow(() -> new NotFoundException("Không có bàn trống"));
+            orderType = 0; // Nếu có bàn thì ăn tại chỗ
+        }
+
+        // Tạo đơn đặt món ăn
+        Reservation reservation = new Reservation();
+        reservation.setUser(user); // Có thể null
+        reservation.setTable(table);
+        reservation.setReservationTime(LocalDateTime.now());
+        reservation.setDepositFee(0L); // Không cần cọc khi chỉ gọi món
+        reservation.setStatus(0); // Chưa xử lý
+        reservation.setOrderType(orderType);
+
+        reservation = reservationRepository.save(reservation);
+
+        // Thêm món ăn vào đơn hàng
+        List<ReservationItem> reservationItems = new ArrayList<>();
+        long totalAmount = 0L;
+        for (ItemRequest itemRequest : request.getItems()) {
+            Item item = itemRepository.findById(itemRequest.getItemId())
+                    .orElseThrow(() -> new NotFoundException("Không tìm thấy món ăn"));
+
+            ReservationItem reservationItem = new ReservationItem();
+            reservationItem.setReservation(reservation);
+            reservationItem.setItem(item);
+            reservationItem.setQuantity(itemRequest.getQuantity());
+            reservationItem.setTotalPrice(item.getCost() * itemRequest.getQuantity());
+
+            reservationItems.add(reservationItem);
+            totalAmount += reservationItem.getTotalPrice();
+        }
+        reservationItemRepository.saveAll(reservationItems);
+
+        // Cập nhật tổng tiền
+        reservation.setTotalAmount(totalAmount);
+        reservationRepository.save(reservation);
+
+        return reservation;
+    }
+
     public List<Reservation> getReservations() {
         return reservationRepository.findAll();
     }
@@ -301,8 +353,8 @@ public class ReservationService {
         for (Reservation r : reservations) {
             Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue(stt++);
-            row.createCell(1).setCellValue(r.getUser().getFullname());
-            row.createCell(2).setCellValue(r.getUser().getUsername());
+            row.createCell(1).setCellValue(r.getUser() != null ? r.getUser().getFullname() : "");
+            row.createCell(2).setCellValue(r.getUser() != null ? r.getUser().getUsername() : "");
 
             // Loại đơn hàng
             String orderType = r.getOrderType() == 1 ? "Mang đi" : "Ăn tại chỗ";

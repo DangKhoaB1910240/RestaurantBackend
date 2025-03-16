@@ -17,7 +17,7 @@ public class TableService {
 
     private final TableRepository tableRepository;
 
-    public String addTable(TableDto request) {
+    public Table addTable(TableDto request) {
         Table table = new Table();
         table.setTableNumber(request.getTableNumber());
         table.setCapacity(request.getCapacity());
@@ -25,17 +25,14 @@ public class TableService {
         table.setType(request.getType());
         table.setPrice(request.getPrice());
 
-        tableRepository.save(table);
-        return "Table added successfully";
+        Table savedTable = tableRepository.save(table);
+        return savedTable;
     }
 
-    public String updateTable(Integer id, TableDto request) {
-        Optional<Table> tableOpt = tableRepository.findById(id);
-        if (tableOpt.isEmpty()) {
-            throw new NotFoundException(HttpStatus.NOT_FOUND.toString());
-        }
+    public void updateTable(Integer id, TableDto request) {
+        Table table = tableRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Không tồn tại bàn với id " + id));
 
-        Table table = tableOpt.get();
         table.setTableNumber(request.getTableNumber());
         table.setCapacity(request.getCapacity());
         table.setIsAvailable(request.getIsAvailable());
@@ -43,17 +40,15 @@ public class TableService {
         table.setPrice(request.getPrice());
 
         tableRepository.save(table);
-        return "Table updated successfully";
     }
 
-    public String deleteTable(Integer id) {
+    public void deleteTable(Integer id) {
         Optional<Table> tableOpt = tableRepository.findById(id);
         if (tableOpt.isEmpty()) {
             throw new NotFoundException(HttpStatus.NOT_FOUND.toString());
         }
 
         tableRepository.deleteById(id);
-        return "Table deleted successfully";
     }
 
     public List<Table> getAllTables() {

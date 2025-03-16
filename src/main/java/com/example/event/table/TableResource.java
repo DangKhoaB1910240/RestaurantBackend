@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -29,14 +30,16 @@ public class TableResource {
         return ResponseEntity.ok(tableService.addTable(request));
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateTable(@PathVariable Integer id, @RequestBody TableDto request) {
-        return ResponseEntity.ok(tableService.updateTable(id, request));
+    @PatchMapping("/update/{id}")
+    public ResponseEntity<Void> updateTable(@PathVariable Integer id, @RequestBody TableDto request) {
+        this.tableService.updateTable(id, request);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteTable(@PathVariable Integer id) {
-        return ResponseEntity.ok(tableService.deleteTable(id));
+    public ResponseEntity<Void> deleteTable(@PathVariable Integer id) {
+        tableService.deleteTable(id);
+        return null;
     }
 
     @GetMapping("/all")

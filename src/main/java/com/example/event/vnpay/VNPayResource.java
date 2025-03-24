@@ -61,7 +61,7 @@ public class VNPayResource {
                 // Trạng thái đặt bàn 0: Chưa xử lý, 1: Đã cọc, 2: Đã nhận bàn, 3: Đã hủy bỏ
                 reservation.setStatus(1);
                 reservationRepository.save(reservation);
-                response.sendRedirect("http://localhost:4200/lichsu/" + reservation.getId());
+                response.sendRedirect("http://localhost:4200/lichsu");
             } else {
                 // Giao dịch thất bại
                 // Thực hiện các xử lý cần thiết, ví dụ: không cập nhật CSDL\
@@ -70,7 +70,7 @@ public class VNPayResource {
                         .orElseThrow(() -> new NotFoundException("Không tồn tại hồ sơ đặt bàn cuả khách hàng này"));
 
                 reservationRepository.delete(reservation);
-                response.sendRedirect("http://localhost:4200/lichsu/" + reservation.getId());
+                response.sendRedirect("http://localhost:4200/lichsu");
 
             }
         }

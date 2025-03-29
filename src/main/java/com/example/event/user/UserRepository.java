@@ -10,17 +10,20 @@ import org.springframework.stereotype.Repository;
 
 import com.example.event.role.Role;
 
-
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
 
     boolean existsByUsername(String username);
-    
+
     Optional<User> findByUsername(String username); // Giai quyết vấn đề bị null
 
     @Query("SELECT r.name FROM User u JOIN u.roles r WHERE u.username = :username")
     List<String> findRoleNamesByUsername(@Param("username") String username);
+
     List<User> findByFullname(String fullname);
+
     Boolean existsByRolesContaining(Role role);
-    
+
+    Optional<User> findByEmail(String email);
+
 }

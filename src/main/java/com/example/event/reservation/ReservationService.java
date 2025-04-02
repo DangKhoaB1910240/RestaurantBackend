@@ -281,30 +281,37 @@ public class ReservationService {
     }
 
     public void updateById(Integer id, Integer userId, Reservation reservation) {
+        System.out.println(reservation.getReservationTime());
         Reservation reservation2 = reservationRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Không tồn tại lịch đặt bàn này"));
-        reservation2.setStatus(reservation.getStatus());
-        String trangThai;
-        switch (reservation2.getStatus()) {
-            case 0:
-                trangThai = "Chưa xử lý";
-                break;
-            case 1:
-                trangThai = "Đã cọc";
-                break;
-            case 2:
-                trangThai = "Đã nhận bàn";
-                break;
-            case 3:
-                trangThai = "Đã hủy bỏ";
-                break;
-            default:
-                trangThai = "Không xác định";
+        if (reservation.getStatus() != null) {
+            reservation2.setStatus(reservation.getStatus());
+            String trangThai;
+            switch (reservation2.getStatus()) {
+                case 0:
+                    trangThai = "Chưa xử lý";
+                    break;
+                case 1:
+                    trangThai = "Đã cọc";
+                    break;
+                case 2:
+                    trangThai = "Đã nhận bàn";
+                    break;
+                case 3:
+                    trangThai = "Đã hủy bỏ";
+                    break;
+                default:
+                    trangThai = "Không xác định";
+            }
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new NotFoundException("Không tồn tại người dùng này"));
+            addLogger(userId, "- Cập nhật trạng thái tài khoản \"" + user.getUsername()
+                    + "\" thành " + trangThai);
         }
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Không tồn tại người dùng này"));
-        addLogger(userId, "- Cập nhật trạng thái tài khoản \"" + user.getUsername()
-                + "\" thành " + trangThai);
+        if (reservation.getReservationTime() != null) {
+            reservation2.setReservationTime(reservation.getReservationTime());
+        }
+
         reservationRepository.save(reservation2);
     }
 
